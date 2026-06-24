@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  margin: 0;
+  background: transparent;
+  color: #0f172a;
+}
+
+* {
+  box-sizing: border-box;
+}
