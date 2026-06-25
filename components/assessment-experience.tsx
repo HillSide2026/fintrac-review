@@ -416,7 +416,7 @@ export function AssessmentExperience() {
             FINTRAC Effectiveness Review
           </p>
           <p style={{ fontSize: "12px", color: "#6b7280", margin: 0 }}>
-            Levine Law — protected by solicitor-client privilege
+            Levine Law — confidential
           </p>
         </div>
         <div
@@ -527,7 +527,7 @@ export function AssessmentExperience() {
           FINTRAC Effectiveness Review
         </p>
         <p style={{ fontSize: "12px", color: "#6b7280", margin: 0 }}>
-          Levine Law — protected by solicitor-client privilege
+          Levine Law — confidential
         </p>
       </div>
 
