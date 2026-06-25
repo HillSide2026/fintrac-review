@@ -1,6 +1,6 @@
 # FINTRAC Effectiveness Review Intake
 
-Embed-first multi-step intake form for Levine Legal Professional Corporation. Collects information from Canadian reporting entities seeking a FINTRAC AML/ATF compliance program effectiveness review, generates an internal Claude assessment, and routes the intake to GHL and Airtable.
+Embed-first multi-step intake form for Levine Law. Collects information from Canadian reporting entities seeking a FINTRAC AML/ATF compliance program effectiveness review, generates an internal Claude assessment, and routes the intake to GHL and Airtable.
 
 ## Stack
 

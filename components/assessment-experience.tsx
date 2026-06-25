@@ -452,11 +452,11 @@ export function AssessmentExperience() {
         }}
       >
         <div style={{ marginBottom: "20px" }}>
-          <p style={{ fontWeight: 600, fontSize: "15px", margin: "0 0 2px" }}>
+          <p style={{ fontWeight: 600, fontSize: "15px", margin: "0 0 2px", color: "#1d4771" }}>
             FINTRAC Effectiveness Review Intake
           </p>
           <p style={{ fontSize: "12px", color: "#6b7280", margin: 0 }}>
-            Levine Legal Professional Corporation — confidential
+            Levine Law — confidential
           </p>
         </div>
         <div
@@ -485,7 +485,7 @@ export function AssessmentExperience() {
               style={{
                 fontWeight: 600,
                 fontSize: "13px",
-                color: "#374151",
+                color: "#1d4771",
                 margin: "0 0 8px",
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
@@ -536,7 +536,7 @@ export function AssessmentExperience() {
           }}
         >
           Your information has been received. A member of our compliance team at
-          Levine Legal Professional Corporation will review your file and be in
+          Levine Law will review your file and be in
           touch with you shortly.
         </p>
       </div>
@@ -554,11 +554,11 @@ export function AssessmentExperience() {
       }}
     >
       <div style={{ marginBottom: "20px" }}>
-        <p style={{ fontWeight: 600, fontSize: "15px", margin: "0 0 2px" }}>
+        <p style={{ fontWeight: 600, fontSize: "15px", margin: "0 0 2px", color: "#1d4771" }}>
           FINTRAC Effectiveness Review Intake
         </p>
         <p style={{ fontSize: "12px", color: "#6b7280", margin: 0 }}>
-          Levine Legal Professional Corporation — confidential
+          Levine Law — confidential
         </p>
       </div>
 
@@ -593,7 +593,16 @@ export function AssessmentExperience() {
         </div>
       </div>
 
-      <p style={{ fontSize: "13px", color: "#6b7280", margin: "0 0 16px" }}>
+      <p
+        style={{
+          fontSize: "13px",
+          fontWeight: 600,
+          color: "#1d4771",
+          margin: "0 0 16px",
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+        }}
+      >
         {STEPS[step]}
       </p>
 

@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Next.js 14 embed-first intake app for **Levine Legal Professional Corporation**. Collects information from Canadian FINTRAC reporting entities seeking an AML/ATF compliance program effectiveness review, runs an internal Claude assessment, and routes leads to GHL and Airtable. Designed to run inside an iframe on a GHL landing page.
+Next.js 14 embed-first intake app for **Levine Law**. Collects information from Canadian FINTRAC reporting entities seeking an AML/ATF compliance program effectiveness review, runs an internal Claude assessment, and routes leads to GHL and Airtable. Designed to run inside an iframe on a GHL landing page.
 
 ## Stack
 
