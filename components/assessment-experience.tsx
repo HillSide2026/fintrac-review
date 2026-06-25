@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  CONTACT_ROLE_OPTIONS,
   ENTITY_TYPE_LABELS,
   INITIAL_INTAKE_ANSWERS,
+  ORG_SIZE_OPTIONS,
   STAGE_1_STEP_COUNT,
   STEPS,
   TRIGGER_REASON_LABELS,
@@ -18,7 +20,6 @@ import type {
   PriorExaminationStatus,
   ProgramStatus,
   ReportingEntityType,
-  ServiceScope,
   ServiceScopeAnswers,
   SituationAnswers,
   TimingAnswers,
@@ -256,16 +257,6 @@ const TRIGGER_REASONS = Object.keys(
   TRIGGER_REASON_LABELS,
 ) as TriggerReason[];
 
-const SERVICE_SCOPE_OPTIONS: { value: ServiceScope; label: string }[] = [
-  { value: "unsure", label: "Unsure — guidance requested" },
-  { value: "full_review", label: "Full effectiveness review" },
-  {
-    value: "gap_assessment",
-    label: "Gap assessment against PCMLTFA requirements",
-  },
-  { value: "document_review", label: "Document review only" },
-  { value: "targeted", label: "Targeted review of specific program elements" },
-];
 
 export function AssessmentExperience() {
   const [step, setStep] = useState(0);
@@ -596,6 +587,24 @@ export function AssessmentExperience() {
               value={orgProfile.orgName}
             />
           </Field>
+          <Field label="Your role">
+            <SelectInput
+              onChange={(value) =>
+                setOrgProfile((c) => ({ ...c, contactRole: value }))
+              }
+              options={CONTACT_ROLE_OPTIONS}
+              value={orgProfile.contactRole}
+            />
+          </Field>
+          <Field label="Organization size">
+            <SelectInput
+              onChange={(value) =>
+                setOrgProfile((c) => ({ ...c, orgSize: value }))
+              }
+              options={ORG_SIZE_OPTIONS}
+              value={orgProfile.orgSize}
+            />
+          </Field>
           <Field label="Entity type under PCMLTFA">
             <SelectInput
               onChange={(value) =>
@@ -677,14 +686,14 @@ export function AssessmentExperience() {
               </div>
             </Field>
           </div>
-          <Field label="Anything else before we call? (optional)">
+          <Field label="What outcome would make this a success for you? (optional)">
             <TextArea
               onChange={(value) =>
-                setTiming((c) => ({ ...c, additionalNotes: value }))
+                setTiming((c) => ({ ...c, successOutcome: value }))
               }
-              placeholder="Any context, questions, or details you'd like us to know..."
+              placeholder="e.g. I want to go into an exam knowing we're clean. I need to show the board we've addressed our gaps..."
               rows={3}
-              value={timing.additionalNotes}
+              value={timing.successOutcome}
             />
           </Field>
         </div>
@@ -895,20 +904,6 @@ export function AssessmentExperience() {
               ))}
             </div>
           </Field>
-          <div style={dividerStyle}>
-            <Field label="Preferred scope of service">
-              <SelectInput
-                onChange={(value) =>
-                  setServiceScope((c) => ({
-                    ...c,
-                    preferredScope: value as ServiceScope,
-                  }))
-                }
-                options={SERVICE_SCOPE_OPTIONS}
-                value={serviceScope.preferredScope}
-              />
-            </Field>
-          </div>
           <Field label="Target completion date (if known)">
             <TextInput
               onChange={(value) =>
@@ -918,13 +913,23 @@ export function AssessmentExperience() {
               value={serviceScope.targetDate}
             />
           </Field>
+          <Field label="What part of your program concerns you most? (optional)">
+            <TextArea
+              onChange={(value) =>
+                setServiceScope((c) => ({ ...c, programConcerns: value }))
+              }
+              placeholder="e.g. Our risk assessment hasn't been updated in years. We're unsure about our STR filing obligations..."
+              rows={3}
+              value={serviceScope.programConcerns}
+            />
+          </Field>
           <Field label="Anything else you'd like us to know (optional)">
             <TextArea
               onChange={(value) =>
                 setServiceScope((c) => ({ ...c, additionalNotes: value }))
               }
-              placeholder="Additional context, specific areas of concern, questions for our team..."
-              rows={4}
+              placeholder="Additional context, questions for our team..."
+              rows={3}
               value={serviceScope.additionalNotes}
             />
           </Field>

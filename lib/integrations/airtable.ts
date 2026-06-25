@@ -45,8 +45,8 @@ export async function storeIntakeInAirtable({
               province: "",
               urgency: answers.timing.urgency,
               preferred_scope: answers.completedStage2
-                ? answers.serviceScope.preferredScope
-                : "unsure",
+                ? answers.serviceScope.programConcerns
+                : "",
               answers: JSON.stringify(answers, null, 2),
               assessment: assessment ? JSON.stringify(assessment, null, 2) : "",
               created_at: new Date().toISOString(),

@@ -17,6 +17,8 @@ export const STAGE_1_STEP_COUNT = 2;
 export const INITIAL_INTAKE_ANSWERS: FintracIntakeAnswers = {
   orgProfile: {
     orgName: "",
+    contactRole: "",
+    orgSize: "",
   },
   situation: {
     entityType: "bank",
@@ -26,7 +28,7 @@ export const INITIAL_INTAKE_ANSWERS: FintracIntakeAnswers = {
   },
   timing: {
     urgency: "standard",
-    additionalNotes: "",
+    successOutcome: "",
   },
   completedStage2: false,
   complianceProgram: {
@@ -45,8 +47,8 @@ export const INITIAL_INTAKE_ANSWERS: FintracIntakeAnswers = {
   },
   serviceScope: {
     documentsAvailable: "unsure",
-    preferredScope: "unsure",
     targetDate: "",
+    programConcerns: "",
     additionalNotes: "",
   },
 };
@@ -106,13 +108,23 @@ export const URGENCY_LABELS: Record<string, string> = {
   critical: "Critical — within 2 weeks or examination is imminent",
 };
 
-export const SERVICE_SCOPE_LABELS: Record<string, string> = {
-  full_review: "Full effectiveness review",
-  gap_assessment: "Gap assessment against PCMLTFA requirements",
-  document_review: "Document review only",
-  targeted: "Targeted review of specific program elements",
-  unsure: "Unsure — guidance requested",
-};
+export const CONTACT_ROLE_OPTIONS: { value: string; label: string }[] = [
+  { value: "", label: "Select your role" },
+  { value: "cco", label: "Chief Compliance Officer" },
+  { value: "ceo", label: "CEO / Founder" },
+  { value: "cfo", label: "CFO / Finance Lead" },
+  { value: "gc", label: "General Counsel" },
+  { value: "compliance_manager", label: "Compliance Manager" },
+  { value: "other", label: "Other" },
+];
+
+export const ORG_SIZE_OPTIONS: { value: string; label: string }[] = [
+  { value: "", label: "Select organization size" },
+  { value: "under_25", label: "Under 25 employees" },
+  { value: "25_100", label: "25–100 employees" },
+  { value: "100_500", label: "100–500 employees" },
+  { value: "500_plus", label: "500+ employees" },
+];
 
 export function createIntakeSummary(
   answers: FintracIntakeAnswers,
@@ -120,6 +132,12 @@ export function createIntakeSummary(
   const summary: IntakeSummary = {
     "Your Organization": {
       Organization: answers.orgProfile.orgName || NOT_PROVIDED,
+      ...(answers.orgProfile.contactRole && {
+        Role: answers.orgProfile.contactRole,
+      }),
+      ...(answers.orgProfile.orgSize && {
+        "Organization Size": answers.orgProfile.orgSize,
+      }),
       "Entity Type":
         ENTITY_TYPE_LABELS[answers.situation.entityType] ??
         answers.situation.entityType,
@@ -140,8 +158,8 @@ export function createIntakeSummary(
       }),
       Urgency:
         URGENCY_LABELS[answers.timing.urgency] ?? answers.timing.urgency,
-      ...(answers.timing.additionalNotes && {
-        Notes: answers.timing.additionalNotes,
+      ...(answers.timing.successOutcome && {
+        "Success Goal": answers.timing.successOutcome,
       }),
     },
   };
@@ -186,11 +204,11 @@ export function createIntakeSummary(
       "Documents Available":
         DOCUMENT_AVAILABILITY_LABELS[answers.serviceScope.documentsAvailable] ??
         answers.serviceScope.documentsAvailable,
-      "Preferred Scope":
-        SERVICE_SCOPE_LABELS[answers.serviceScope.preferredScope] ??
-        answers.serviceScope.preferredScope,
       ...(answers.serviceScope.targetDate && {
         "Target Date": answers.serviceScope.targetDate,
+      }),
+      ...(answers.serviceScope.programConcerns && {
+        "Program Concerns": answers.serviceScope.programConcerns,
       }),
       ...(answers.serviceScope.additionalNotes && {
         "Additional Notes": answers.serviceScope.additionalNotes,

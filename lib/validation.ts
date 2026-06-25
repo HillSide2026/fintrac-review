@@ -4,7 +4,6 @@ import type {
   PriorExaminationStatus,
   ProgramStatus,
   ReportingEntityType,
-  ServiceScope,
   TriggerReason,
   UrgencyLevel,
 } from "@/lib/types";
@@ -138,21 +137,6 @@ function assertDocumentAvailability(
   throw new Error(`Invalid value for ${field}.`);
 }
 
-const SERVICE_SCOPES: ServiceScope[] = [
-  "full_review",
-  "gap_assessment",
-  "document_review",
-  "targeted",
-  "unsure",
-];
-
-function assertServiceScope(value: unknown, field: string): ServiceScope {
-  if (SERVICE_SCOPES.includes(value as ServiceScope)) {
-    return value as ServiceScope;
-  }
-  throw new Error(`Invalid value for ${field}.`);
-}
-
 export function parseFintracIntakeAnswers(
   payload: unknown,
 ): FintracIntakeAnswers {
@@ -168,6 +152,8 @@ export function parseFintracIntakeAnswers(
   const result: FintracIntakeAnswers = {
     orgProfile: {
       orgName: assertString(orgProfile.orgName, "Organization Name"),
+      contactRole: assertString(orgProfile.contactRole ?? "", "Contact Role"),
+      orgSize: assertString(orgProfile.orgSize ?? "", "Organization Size"),
     },
     situation: {
       entityType: assertReportingEntityType(
@@ -183,7 +169,7 @@ export function parseFintracIntakeAnswers(
     },
     timing: {
       urgency: assertUrgencyLevel(timing.urgency, "Urgency"),
-      additionalNotes: assertString(timing.additionalNotes, "Additional Notes"),
+      successOutcome: assertString(timing.successOutcome ?? "", "Success Outcome"),
     },
     completedStage2,
     complianceProgram: {
@@ -202,8 +188,8 @@ export function parseFintracIntakeAnswers(
     },
     serviceScope: {
       documentsAvailable: "unsure",
-      preferredScope: "unsure",
       targetDate: "",
+      programConcerns: "",
       additionalNotes: "",
     },
   };
@@ -255,11 +241,8 @@ export function parseFintracIntakeAnswers(
         ss.documentsAvailable,
         "Documents Available",
       ),
-      preferredScope: assertServiceScope(
-        ss.preferredScope,
-        "Preferred Scope",
-      ),
       targetDate: assertString(ss.targetDate, "Target Date"),
+      programConcerns: assertString(ss.programConcerns ?? "", "Program Concerns"),
       additionalNotes: assertString(ss.additionalNotes, "Additional Notes"),
     };
   }

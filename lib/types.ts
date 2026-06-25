@@ -40,15 +40,10 @@ export type PriorExaminationStatus =
 
 export type UrgencyLevel = "standard" | "moderate" | "urgent" | "critical";
 
-export type ServiceScope =
-  | "full_review"
-  | "gap_assessment"
-  | "document_review"
-  | "targeted"
-  | "unsure";
-
 export type OrgProfileAnswers = {
   orgName: string;
+  contactRole: string;
+  orgSize: string;
 };
 
 export type SituationAnswers = {
@@ -60,7 +55,7 @@ export type SituationAnswers = {
 
 export type TimingAnswers = {
   urgency: UrgencyLevel;
-  additionalNotes: string;
+  successOutcome: string;
 };
 
 export type ComplianceProgramAnswers = {
@@ -81,8 +76,8 @@ export type PriorExaminationAnswers = {
 
 export type ServiceScopeAnswers = {
   documentsAvailable: DocumentAvailability;
-  preferredScope: ServiceScope;
   targetDate: string;
+  programConcerns: string;
   additionalNotes: string;
 };
 
