@@ -12,11 +12,13 @@ export type ReportingEntityType =
   | "bc_notary"
   | "other";
 
-export type FintracRegistrationStatus =
-  | "registered"
-  | "not_required"
-  | "pending"
-  | "unsure";
+export type TriggerReason =
+  | "fintrac_communication"
+  | "examination_pending"
+  | "proactive_assessment"
+  | "program_gaps"
+  | "not_recently_reviewed"
+  | "building_program";
 
 export type ProgramStatus =
   | "established"
@@ -47,22 +49,18 @@ export type ServiceScope =
 
 export type OrgProfileAnswers = {
   orgName: string;
-  province: string;
-  contactName: string;
-  contactTitle: string;
-  phone: string;
-  email: string;
 };
 
-export type ReportingEntityAnswers = {
+export type SituationAnswers = {
   entityType: ReportingEntityType;
   entityTypeOther: string;
-  registrationStatus: FintracRegistrationStatus;
-  registrationNumber: string;
-  coName: string;
-  coTitle: string;
-  coPhone: string;
-  coEmail: string;
+  triggers: TriggerReason[];
+  triggerNotes: string;
+};
+
+export type TimingAnswers = {
+  urgency: UrgencyLevel;
+  additionalNotes: string;
 };
 
 export type ComplianceProgramAnswers = {
@@ -74,15 +72,6 @@ export type ComplianceProgramAnswers = {
   programNotes: string;
 };
 
-export type ReportingProcessAnswers = {
-  filesStrs: boolean;
-  filesLctrs: boolean;
-  filesEftrs: boolean;
-  otherReports: string;
-  reportingNotes: string;
-  recordkeepingNotes: string;
-};
-
 export type PriorExaminationAnswers = {
   examinationStatus: PriorExaminationStatus;
   lastExamDate: string;
@@ -92,31 +81,24 @@ export type PriorExaminationAnswers = {
 
 export type ServiceScopeAnswers = {
   documentsAvailable: DocumentAvailability;
-  urgency: UrgencyLevel;
-  targetDate: string;
   preferredScope: ServiceScope;
+  targetDate: string;
   additionalNotes: string;
 };
 
 export type FintracIntakeAnswers = {
   orgProfile: OrgProfileAnswers;
-  reportingEntity: ReportingEntityAnswers;
+  situation: SituationAnswers;
+  timing: TimingAnswers;
+  completedStage2: boolean;
   complianceProgram: ComplianceProgramAnswers;
-  reportingProcesses: ReportingProcessAnswers;
   priorExaminations: PriorExaminationAnswers;
   serviceScope: ServiceScopeAnswers;
 };
 
 export type IntakeSummarySection = Record<string, string>;
 
-export type IntakeSummary = {
-  "Organization Profile": IntakeSummarySection;
-  "Reporting Entity & Registration": IntakeSummarySection;
-  "Compliance Program": IntakeSummarySection;
-  "Reporting & Recordkeeping": IntakeSummarySection;
-  "Prior Examinations": IntakeSummarySection;
-  "Scope & Timing": IntakeSummarySection;
-};
+export type IntakeSummary = Record<string, IntakeSummarySection>;
 
 export type AssessmentResult = {
   summary: string;

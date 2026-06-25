@@ -39,12 +39,14 @@ export async function storeIntakeInAirtable({
           {
             fields: {
               org_name: deriveOrgName(answers),
-              contact_name: answers.orgProfile.contactName,
-              email: answers.orgProfile.email,
-              entity_type: answers.reportingEntity.entityType,
-              province: answers.orgProfile.province,
-              urgency: answers.serviceScope.urgency,
-              preferred_scope: answers.serviceScope.preferredScope,
+              contact_name: "",
+              email: "",
+              entity_type: answers.situation.entityType,
+              province: "",
+              urgency: answers.timing.urgency,
+              preferred_scope: answers.completedStage2
+                ? answers.serviceScope.preferredScope
+                : "unsure",
               answers: JSON.stringify(answers, null, 2),
               assessment: assessment ? JSON.stringify(assessment, null, 2) : "",
               created_at: new Date().toISOString(),

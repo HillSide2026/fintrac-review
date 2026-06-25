@@ -21,6 +21,10 @@ function buildPrompt(answers: FintracIntakeAnswers) {
     })
     .join("\n\n");
 
+  const stage2Note = answers.completedStage2
+    ? ""
+    : "\n\nNote: The prospect submitted without completing the optional program detail section. Base scoping notes on entity type and the triggers they identified.";
+
   return `
 Review this FINTRAC effectiveness review intake for a Canadian reporting entity. Identify:
 - Program gaps relative to PCMLTFA / PCMLTFR requirements
@@ -37,7 +41,7 @@ Return valid JSON only with this shape:
   "scopingNotes": ["string"]
 }
 
-These notes are for internal compliance team use only. Do not address the client directly.
+These notes are for internal compliance team use only. Do not address the client directly.${stage2Note}
 
 Intake:
 ${formattedSummary}

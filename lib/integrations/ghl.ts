@@ -36,9 +36,6 @@ export async function sendLeadToGhl({
       source: "fintrac-effectiveness-review",
       createdAt: new Date().toISOString(),
       contact: {
-        name: answers.orgProfile.contactName,
-        email: answers.orgProfile.email,
-        phone: answers.orgProfile.phone,
         company: deriveOrgName(answers),
       },
       answers,

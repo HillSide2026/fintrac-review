@@ -1,15 +1,13 @@
 import type {
   DocumentAvailability,
   FintracIntakeAnswers,
-  FintracRegistrationStatus,
   PriorExaminationStatus,
   ProgramStatus,
   ReportingEntityType,
   ServiceScope,
+  TriggerReason,
   UrgencyLevel,
 } from "@/lib/types";
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function assertObject(value: unknown, field: string) {
   if (!value || typeof value !== "object") {
@@ -57,19 +55,37 @@ function assertReportingEntityType(
   throw new Error(`Invalid value for ${field}.`);
 }
 
-const REGISTRATION_STATUSES: FintracRegistrationStatus[] = [
-  "registered",
-  "not_required",
-  "pending",
-  "unsure",
+const TRIGGER_REASONS: TriggerReason[] = [
+  "fintrac_communication",
+  "examination_pending",
+  "proactive_assessment",
+  "program_gaps",
+  "not_recently_reviewed",
+  "building_program",
 ];
 
-function assertFintracRegistrationStatus(
+function assertTriggerReasons(
   value: unknown,
   field: string,
-): FintracRegistrationStatus {
-  if (REGISTRATION_STATUSES.includes(value as FintracRegistrationStatus)) {
-    return value as FintracRegistrationStatus;
+): TriggerReason[] {
+  if (!Array.isArray(value)) {
+    throw new Error(`Invalid value for ${field}.`);
+  }
+  return value.filter((v) =>
+    TRIGGER_REASONS.includes(v as TriggerReason),
+  ) as TriggerReason[];
+}
+
+const URGENCY_LEVELS: UrgencyLevel[] = [
+  "standard",
+  "moderate",
+  "urgent",
+  "critical",
+];
+
+function assertUrgencyLevel(value: unknown, field: string): UrgencyLevel {
+  if (URGENCY_LEVELS.includes(value as UrgencyLevel)) {
+    return value as UrgencyLevel;
   }
   throw new Error(`Invalid value for ${field}.`);
 }
@@ -122,20 +138,6 @@ function assertDocumentAvailability(
   throw new Error(`Invalid value for ${field}.`);
 }
 
-const URGENCY_LEVELS: UrgencyLevel[] = [
-  "standard",
-  "moderate",
-  "urgent",
-  "critical",
-];
-
-function assertUrgencyLevel(value: unknown, field: string): UrgencyLevel {
-  if (URGENCY_LEVELS.includes(value as UrgencyLevel)) {
-    return value as UrgencyLevel;
-  }
-  throw new Error(`Invalid value for ${field}.`);
-}
-
 const SERVICE_SCOPES: ServiceScope[] = [
   "full_review",
   "gap_assessment",
@@ -156,145 +158,111 @@ export function parseFintracIntakeAnswers(
 ): FintracIntakeAnswers {
   const candidate = assertObject(payload, "request body");
   const orgProfile = assertObject(candidate.orgProfile, "Organization Profile");
-  const reportingEntity = assertObject(
-    candidate.reportingEntity,
-    "Reporting Entity",
+  const situation = assertObject(candidate.situation, "Situation");
+  const timing = assertObject(candidate.timing, "Timing");
+  const completedStage2 = assertBoolean(
+    candidate.completedStage2,
+    "completedStage2",
   );
-  const complianceProgram = assertObject(
-    candidate.complianceProgram,
-    "Compliance Program",
-  );
-  const reportingProcesses = assertObject(
-    candidate.reportingProcesses,
-    "Reporting Processes",
-  );
-  const priorExaminations = assertObject(
-    candidate.priorExaminations,
-    "Prior Examinations",
-  );
-  const serviceScope = assertObject(candidate.serviceScope, "Service Scope");
 
-  const email = assertString(orgProfile.email, "Contact Email");
-  if (email && !EMAIL_PATTERN.test(email)) {
-    throw new Error("Contact email address is invalid.");
-  }
-
-  return {
+  const result: FintracIntakeAnswers = {
     orgProfile: {
       orgName: assertString(orgProfile.orgName, "Organization Name"),
-      province: assertString(orgProfile.province, "Province"),
-      contactName: assertString(orgProfile.contactName, "Contact Name"),
-      contactTitle: assertString(orgProfile.contactTitle, "Contact Title"),
-      phone: assertString(orgProfile.phone, "Phone"),
-      email,
     },
-    reportingEntity: {
+    situation: {
       entityType: assertReportingEntityType(
-        reportingEntity.entityType,
+        situation.entityType,
         "Entity Type",
       ),
       entityTypeOther: assertString(
-        reportingEntity.entityTypeOther,
+        situation.entityTypeOther,
         "Entity Type Other",
       ),
-      registrationStatus: assertFintracRegistrationStatus(
-        reportingEntity.registrationStatus,
-        "Registration Status",
-      ),
-      registrationNumber: assertString(
-        reportingEntity.registrationNumber,
-        "Registration Number",
-      ),
-      coName: assertString(reportingEntity.coName, "Compliance Officer Name"),
-      coTitle: assertString(
-        reportingEntity.coTitle,
-        "Compliance Officer Title",
-      ),
-      coPhone: assertString(
-        reportingEntity.coPhone,
-        "Compliance Officer Phone",
-      ),
-      coEmail: assertString(
-        reportingEntity.coEmail,
-        "Compliance Officer Email",
-      ),
+      triggers: assertTriggerReasons(situation.triggers, "Triggers"),
+      triggerNotes: assertString(situation.triggerNotes, "Trigger Notes"),
     },
+    timing: {
+      urgency: assertUrgencyLevel(timing.urgency, "Urgency"),
+      additionalNotes: assertString(timing.additionalNotes, "Additional Notes"),
+    },
+    completedStage2,
     complianceProgram: {
+      policiesStatus: "established",
+      lastPolicyReview: "",
+      riskAssessmentStatus: "established",
+      trainingStatus: "established",
+      monitoringStatus: "established",
+      programNotes: "",
+    },
+    priorExaminations: {
+      examinationStatus: "none",
+      lastExamDate: "",
+      findingsSummary: "",
+      remediationStatus: "",
+    },
+    serviceScope: {
+      documentsAvailable: "unsure",
+      preferredScope: "unsure",
+      targetDate: "",
+      additionalNotes: "",
+    },
+  };
+
+  if (completedStage2) {
+    const cp = assertObject(candidate.complianceProgram, "Compliance Program");
+    const pe = assertObject(candidate.priorExaminations, "Prior Examinations");
+    const ss = assertObject(candidate.serviceScope, "Service Scope");
+
+    result.complianceProgram = {
       policiesStatus: assertProgramStatus(
-        complianceProgram.policiesStatus,
+        cp.policiesStatus,
         "Policies Status",
       ),
       lastPolicyReview: assertString(
-        complianceProgram.lastPolicyReview,
+        cp.lastPolicyReview,
         "Last Policy Review",
       ),
       riskAssessmentStatus: assertProgramStatus(
-        complianceProgram.riskAssessmentStatus,
+        cp.riskAssessmentStatus,
         "Risk Assessment Status",
       ),
       trainingStatus: assertProgramStatus(
-        complianceProgram.trainingStatus,
+        cp.trainingStatus,
         "Training Status",
       ),
       monitoringStatus: assertProgramStatus(
-        complianceProgram.monitoringStatus,
+        cp.monitoringStatus,
         "Monitoring Status",
       ),
-      programNotes: assertString(
-        complianceProgram.programNotes,
-        "Program Notes",
-      ),
-    },
-    reportingProcesses: {
-      filesStrs: assertBoolean(reportingProcesses.filesStrs, "Files STRs"),
-      filesLctrs: assertBoolean(reportingProcesses.filesLctrs, "Files LCTRs"),
-      filesEftrs: assertBoolean(reportingProcesses.filesEftrs, "Files EFTRs"),
-      otherReports: assertString(
-        reportingProcesses.otherReports,
-        "Other Reports",
-      ),
-      reportingNotes: assertString(
-        reportingProcesses.reportingNotes,
-        "Reporting Notes",
-      ),
-      recordkeepingNotes: assertString(
-        reportingProcesses.recordkeepingNotes,
-        "Recordkeeping Notes",
-      ),
-    },
-    priorExaminations: {
+      programNotes: assertString(cp.programNotes, "Program Notes"),
+    };
+
+    result.priorExaminations = {
       examinationStatus: assertPriorExaminationStatus(
-        priorExaminations.examinationStatus,
+        pe.examinationStatus,
         "Examination Status",
       ),
-      lastExamDate: assertString(
-        priorExaminations.lastExamDate,
-        "Last Exam Date",
-      ),
-      findingsSummary: assertString(
-        priorExaminations.findingsSummary,
-        "Findings Summary",
-      ),
+      lastExamDate: assertString(pe.lastExamDate, "Last Exam Date"),
+      findingsSummary: assertString(pe.findingsSummary, "Findings Summary"),
       remediationStatus: assertString(
-        priorExaminations.remediationStatus,
+        pe.remediationStatus,
         "Remediation Status",
       ),
-    },
-    serviceScope: {
+    };
+
+    result.serviceScope = {
       documentsAvailable: assertDocumentAvailability(
-        serviceScope.documentsAvailable,
+        ss.documentsAvailable,
         "Documents Available",
       ),
-      urgency: assertUrgencyLevel(serviceScope.urgency, "Urgency"),
-      targetDate: assertString(serviceScope.targetDate, "Target Date"),
       preferredScope: assertServiceScope(
-        serviceScope.preferredScope,
+        ss.preferredScope,
         "Preferred Scope",
       ),
-      additionalNotes: assertString(
-        serviceScope.additionalNotes,
-        "Additional Notes",
-      ),
-    },
-  };
+      targetDate: assertString(ss.targetDate, "Target Date"),
+      additionalNotes: assertString(ss.additionalNotes, "Additional Notes"),
+    };
+  }
+
+  return result;
 }

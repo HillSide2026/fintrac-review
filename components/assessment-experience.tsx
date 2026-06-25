@@ -1,21 +1,28 @@
 "use client";
 
-import { INITIAL_INTAKE_ANSWERS, STEPS } from "@/lib/intake";
+import {
+  ENTITY_TYPE_LABELS,
+  INITIAL_INTAKE_ANSWERS,
+  STAGE_1_STEP_COUNT,
+  STEPS,
+  TRIGGER_REASON_LABELS,
+  URGENCY_LABELS,
+} from "@/lib/intake";
 import type {
   ComplianceProgramAnswers,
   DocumentAvailability,
   FintracIntakeAnswers,
-  FintracRegistrationStatus,
   IntakeSummary,
   OrgProfileAnswers,
   PriorExaminationAnswers,
   PriorExaminationStatus,
   ProgramStatus,
-  ReportingEntityAnswers,
   ReportingEntityType,
-  ReportingProcessAnswers,
   ServiceScope,
   ServiceScopeAnswers,
+  SituationAnswers,
+  TimingAnswers,
+  TriggerReason,
   UrgencyLevel,
 } from "@/lib/types";
 import { useEffect, useState, useTransition } from "react";
@@ -40,6 +47,18 @@ const labelStyle = {
   color: "#6b7280",
   display: "block",
   marginBottom: "4px",
+};
+
+const sectionStyle = {
+  display: "flex",
+  flexDirection: "column" as const,
+  gap: "16px",
+};
+
+const dividerStyle = {
+  borderTop: "1px solid #e5e7eb",
+  paddingTop: "16px",
+  marginTop: "2px",
 };
 
 function Field({
@@ -138,7 +157,7 @@ function Checkbox({
     <label
       style={{
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         gap: "8px",
         fontSize: "14px",
         cursor: "pointer",
@@ -147,7 +166,7 @@ function Checkbox({
       <input
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
-        style={{ width: "16px", height: "16px", cursor: "pointer" }}
+        style={{ width: "16px", height: "16px", marginTop: "2px", cursor: "pointer", flexShrink: 0 }}
         type="checkbox"
       />
       {label}
@@ -227,46 +246,15 @@ function ProgramStatusGroup({
   );
 }
 
-const ENTITY_TYPE_OPTIONS: { value: ReportingEntityType; label: string }[] = [
-  { value: "bank", label: "Bank (authorized domestic or foreign)" },
-  { value: "credit_union", label: "Credit union / caisse populaire" },
-  {
-    value: "life_insurance",
-    label: "Life insurance company, broker, or agent",
-  },
-  { value: "securities_dealer", label: "Securities dealer" },
-  { value: "money_services_business", label: "Money services business (MSB)" },
-  {
-    value: "foreign_msb",
-    label: "Foreign money services business (FMSB)",
-  },
-  {
-    value: "real_estate",
-    label: "Real estate developer, broker, or agent",
-  },
-  { value: "accountant", label: "Accountant / CPA firm" },
-  { value: "dpms", label: "Dealer in precious metals and stones" },
-  { value: "casino", label: "Casino" },
-  { value: "bc_notary", label: "British Columbia notary" },
-  { value: "other", label: "Other" },
-];
+const ENTITY_TYPE_OPTIONS: { value: ReportingEntityType; label: string }[] =
+  Object.entries(ENTITY_TYPE_LABELS).map(([value, label]) => ({
+    value: value as ReportingEntityType,
+    label,
+  }));
 
-const PROVINCE_OPTIONS = [
-  { value: "", label: "Select province / territory" },
-  { value: "AB", label: "Alberta" },
-  { value: "BC", label: "British Columbia" },
-  { value: "MB", label: "Manitoba" },
-  { value: "NB", label: "New Brunswick" },
-  { value: "NL", label: "Newfoundland and Labrador" },
-  { value: "NS", label: "Nova Scotia" },
-  { value: "NT", label: "Northwest Territories" },
-  { value: "NU", label: "Nunavut" },
-  { value: "ON", label: "Ontario" },
-  { value: "PE", label: "Prince Edward Island" },
-  { value: "QC", label: "Quebec" },
-  { value: "SK", label: "Saskatchewan" },
-  { value: "YT", label: "Yukon" },
-];
+const TRIGGER_REASONS = Object.keys(
+  TRIGGER_REASON_LABELS,
+) as TriggerReason[];
 
 const SERVICE_SCOPE_OPTIONS: { value: ServiceScope; label: string }[] = [
   { value: "unsure", label: "Unsure — guidance requested" },
@@ -279,40 +267,29 @@ const SERVICE_SCOPE_OPTIONS: { value: ServiceScope; label: string }[] = [
   { value: "targeted", label: "Targeted review of specific program elements" },
 ];
 
-const sectionStyle = {
-  display: "flex",
-  flexDirection: "column" as const,
-  gap: "16px",
-};
-
-const dividerStyle = {
-  borderTop: "1px solid #e5e7eb",
-  paddingTop: "16px",
-  marginTop: "2px",
-};
-
 export function AssessmentExperience() {
   const [step, setStep] = useState(0);
+  const [inStage2, setInStage2] = useState(false);
   const [summary, setSummary] = useState<IntakeSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const [orgProfile, setOrgProfile] = useState(
+  const [orgProfile, setOrgProfile] = useState<OrgProfileAnswers>(
     INITIAL_INTAKE_ANSWERS.orgProfile,
   );
-  const [reportingEntity, setReportingEntity] = useState(
-    INITIAL_INTAKE_ANSWERS.reportingEntity,
+  const [situation, setSituation] = useState<SituationAnswers>(
+    INITIAL_INTAKE_ANSWERS.situation,
   );
-  const [complianceProgram, setComplianceProgram] = useState(
-    INITIAL_INTAKE_ANSWERS.complianceProgram,
+  const [timing, setTiming] = useState<TimingAnswers>(
+    INITIAL_INTAKE_ANSWERS.timing,
   );
-  const [reportingProcesses, setReportingProcesses] = useState(
-    INITIAL_INTAKE_ANSWERS.reportingProcesses,
-  );
-  const [priorExaminations, setPriorExaminations] = useState(
-    INITIAL_INTAKE_ANSWERS.priorExaminations,
-  );
-  const [serviceScope, setServiceScope] = useState(
+  const [complianceProgram, setComplianceProgram] =
+    useState<ComplianceProgramAnswers>(
+      INITIAL_INTAKE_ANSWERS.complianceProgram,
+    );
+  const [priorExaminations, setPriorExaminations] =
+    useState<PriorExaminationAnswers>(INITIAL_INTAKE_ANSWERS.priorExaminations);
+  const [serviceScope, setServiceScope] = useState<ServiceScopeAnswers>(
     INITIAL_INTAKE_ANSWERS.serviceScope,
   );
 
@@ -353,68 +330,28 @@ export function AssessmentExperience() {
     };
   }, []);
 
-  const progress = ((step + 1) / STEPS.length) * 100;
+  const stageStepCount = inStage2
+    ? STEPS.length
+    : STAGE_1_STEP_COUNT;
+  const progress = ((step + 1) / stageStepCount) * 100;
 
-  const updateOrgProfile = <Key extends keyof OrgProfileAnswers>(
-    key: Key,
-    value: OrgProfileAnswers[Key],
-  ) => {
-    setOrgProfile((current) => ({ ...current, [key]: value }));
-  };
-
-  const updateReportingEntity = <Key extends keyof ReportingEntityAnswers>(
-    key: Key,
-    value: ReportingEntityAnswers[Key],
-  ) => {
-    setReportingEntity((current) => ({ ...current, [key]: value }));
-  };
-
-  const updateComplianceProgram = <Key extends keyof ComplianceProgramAnswers>(
-    key: Key,
-    value: ComplianceProgramAnswers[Key],
-  ) => {
-    setComplianceProgram((current) => ({ ...current, [key]: value }));
-  };
-
-  const updateReportingProcesses = <
-    Key extends keyof ReportingProcessAnswers,
-  >(
-    key: Key,
-    value: ReportingProcessAnswers[Key],
-  ) => {
-    setReportingProcesses((current) => ({ ...current, [key]: value }));
-  };
-
-  const updatePriorExaminations = <Key extends keyof PriorExaminationAnswers>(
-    key: Key,
-    value: PriorExaminationAnswers[Key],
-  ) => {
-    setPriorExaminations((current) => ({ ...current, [key]: value }));
-  };
-
-  const updateServiceScope = <Key extends keyof ServiceScopeAnswers>(
-    key: Key,
-    value: ServiceScopeAnswers[Key],
-  ) => {
-    setServiceScope((current) => ({ ...current, [key]: value }));
-  };
-
-  const buildPayload = (): FintracIntakeAnswers => ({
+  const buildPayload = (completedStage2: boolean): FintracIntakeAnswers => ({
     orgProfile,
-    reportingEntity,
+    situation,
+    timing,
+    completedStage2,
     complianceProgram,
-    reportingProcesses,
     priorExaminations,
     serviceScope,
   });
 
-  const submitIntake = async () => {
+  const submitIntake = async (completedStage2: boolean) => {
     setError(null);
 
     const response = await fetch("/api/assessment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(buildPayload()),
+      body: JSON.stringify(buildPayload(completedStage2)),
     });
 
     const data = (await response.json()) as ApiResponse | { error: string };
@@ -428,10 +365,9 @@ export function AssessmentExperience() {
     setSummary(data.summary);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = (completedStage2: boolean) => {
     startTransition(() => {
-      void submitIntake().catch((submissionError) => {
+      void submitIntake(completedStage2).catch((submissionError) => {
         setError(
           submissionError instanceof Error
             ? submissionError.message
@@ -440,6 +376,23 @@ export function AssessmentExperience() {
       });
     });
   };
+
+  const handleEnterStage2 = () => {
+    setInStage2(true);
+    setStep(STAGE_1_STEP_COUNT);
+  };
+
+  const toggleTrigger = (reason: TriggerReason) => {
+    setSituation((current) => ({
+      ...current,
+      triggers: current.triggers.includes(reason)
+        ? current.triggers.filter((t) => t !== reason)
+        : [...current.triggers, reason],
+    }));
+  };
+
+  const isLastStep = step === STEPS.length - 1;
+  const isStage1Final = step === STAGE_1_STEP_COUNT - 1;
 
   if (summary) {
     return (
@@ -452,11 +405,18 @@ export function AssessmentExperience() {
         }}
       >
         <div style={{ marginBottom: "20px" }}>
-          <p style={{ fontWeight: 600, fontSize: "15px", margin: "0 0 2px", color: "#1d4771" }}>
-            FINTRAC Effectiveness Review Intake
+          <p
+            style={{
+              fontWeight: 600,
+              fontSize: "15px",
+              margin: "0 0 2px",
+              color: "#1d4771",
+            }}
+          >
+            FINTRAC Effectiveness Review
           </p>
           <p style={{ fontSize: "12px", color: "#6b7280", margin: 0 }}>
-            Levine Law — confidential
+            Levine Law — protected by solicitor-client privilege
           </p>
         </div>
         <div
@@ -476,7 +436,7 @@ export function AssessmentExperience() {
               fontWeight: 500,
             }}
           >
-            ✓ Intake submitted successfully
+            ✓ Submitted successfully
           </p>
         </div>
         {Object.entries(summary).map(([section, fields]) => (
@@ -511,7 +471,7 @@ export function AssessmentExperience() {
                   <span
                     style={{
                       color: "#6b7280",
-                      minWidth: "200px",
+                      minWidth: "180px",
                       flexShrink: 0,
                     }}
                   >
@@ -536,8 +496,7 @@ export function AssessmentExperience() {
           }}
         >
           Your information has been received. A member of our compliance team at
-          Levine Law will review your file and be in
-          touch with you shortly.
+          Levine Law will review your file and be in touch with you shortly.
         </p>
       </div>
     );
@@ -545,7 +504,10 @@ export function AssessmentExperience() {
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit(isLastStep);
+      }}
       style={{
         fontFamily: "system-ui, sans-serif",
         maxWidth: "560px",
@@ -554,11 +516,18 @@ export function AssessmentExperience() {
       }}
     >
       <div style={{ marginBottom: "20px" }}>
-        <p style={{ fontWeight: 600, fontSize: "15px", margin: "0 0 2px", color: "#1d4771" }}>
-          FINTRAC Effectiveness Review Intake
+        <p
+          style={{
+            fontWeight: 600,
+            fontSize: "15px",
+            margin: "0 0 2px",
+            color: "#1d4771",
+          }}
+        >
+          FINTRAC Effectiveness Review
         </p>
         <p style={{ fontSize: "12px", color: "#6b7280", margin: 0 }}>
-          Levine Law — confidential
+          Levine Law — protected by solicitor-client privilege
         </p>
       </div>
 
@@ -570,8 +539,10 @@ export function AssessmentExperience() {
           marginBottom: "24px",
         }}
       >
-        <span style={{ fontSize: "13px", color: "#6b7280", minWidth: "64px" }}>
-          Step {step + 1} of {STEPS.length}
+        <span style={{ fontSize: "13px", color: "#6b7280", minWidth: "72px" }}>
+          {inStage2
+            ? `Step ${step + 1} of ${STEPS.length}`
+            : `Step ${step + 1} of ${STAGE_1_STEP_COUNT}`}
         </span>
         <div
           style={{
@@ -606,240 +577,134 @@ export function AssessmentExperience() {
         {STEPS[step]}
       </p>
 
-      {/* Step 0 — Organization Profile */}
+      {inStage2 ? (
+        <p style={{ fontSize: "12px", color: "#6b7280", margin: "-8px 0 16px", fontStyle: "italic" }}>
+          Optional — helps us arrive at our first conversation better prepared.
+          You can go back and submit at any time.
+        </p>
+      ) : null}
+
+      {/* Step 0 — Getting Started */}
       {step === 0 ? (
         <div style={sectionStyle}>
-          <Field label="Organization legal name">
+          <Field label="Organization name">
             <TextInput
-              onChange={(value) => updateOrgProfile("orgName", value)}
+              onChange={(value) =>
+                setOrgProfile((c) => ({ ...c, orgName: value }))
+              }
               placeholder="ABC Financial Services Inc."
               value={orgProfile.orgName}
             />
           </Field>
-          <Field label="Province / territory">
-            <SelectInput
-              onChange={(value) => updateOrgProfile("province", value)}
-              options={PROVINCE_OPTIONS}
-              value={orgProfile.province}
-            />
-          </Field>
-          <div style={dividerStyle}>
-            <p
-              style={{
-                fontSize: "12px",
-                color: "#6b7280",
-                margin: "0 0 12px",
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-              }}
-            >
-              Primary contact
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                }}
-              >
-                <Field label="Full name">
-                  <TextInput
-                    onChange={(value) =>
-                      updateOrgProfile("contactName", value)
-                    }
-                    placeholder="Jane Smith"
-                    value={orgProfile.contactName}
-                  />
-                </Field>
-                <Field label="Title / role">
-                  <TextInput
-                    onChange={(value) =>
-                      updateOrgProfile("contactTitle", value)
-                    }
-                    placeholder="Chief Compliance Officer"
-                    value={orgProfile.contactTitle}
-                  />
-                </Field>
-              </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                }}
-              >
-                <Field label="Phone">
-                  <TextInput
-                    onChange={(value) => updateOrgProfile("phone", value)}
-                    placeholder="416-555-0100"
-                    value={orgProfile.phone}
-                  />
-                </Field>
-                <Field label="Email">
-                  <TextInput
-                    onChange={(value) => updateOrgProfile("email", value)}
-                    placeholder="jane@example.com"
-                    type="email"
-                    value={orgProfile.email}
-                  />
-                </Field>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Step 1 — Reporting Entity & Registration */}
-      {step === 1 ? (
-        <div style={sectionStyle}>
-          <Field label="Reporting entity type">
+          <Field label="Entity type under PCMLTFA">
             <SelectInput
               onChange={(value) =>
-                updateReportingEntity(
-                  "entityType",
-                  value as ReportingEntityType,
-                )
+                setSituation((c) => ({
+                  ...c,
+                  entityType: value as ReportingEntityType,
+                }))
               }
               options={ENTITY_TYPE_OPTIONS}
-              value={reportingEntity.entityType}
+              value={situation.entityType}
             />
           </Field>
-          {reportingEntity.entityType === "other" ? (
+          {situation.entityType === "other" ? (
             <Field label="Describe your entity type">
               <TextInput
                 onChange={(value) =>
-                  updateReportingEntity("entityTypeOther", value)
+                  setSituation((c) => ({ ...c, entityTypeOther: value }))
                 }
                 placeholder="e.g. Mortgage broker, cheque casher"
-                value={reportingEntity.entityTypeOther}
+                value={situation.entityTypeOther}
               />
             </Field>
           ) : null}
-          <Field label="FINTRAC registration status">
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              {(
-                [
-                  { value: "registered", label: "Registered with FINTRAC" },
-                  { value: "not_required", label: "Registration not required for this entity type" },
-                  { value: "pending", label: "Registration pending" },
-                  { value: "unsure", label: "Not sure" },
-                ] as { value: FintracRegistrationStatus; label: string }[]
-              ).map((opt) => (
-                <Radio
-                  key={opt.value}
-                  checked={reportingEntity.registrationStatus === opt.value}
-                  label={opt.label}
-                  name="registrationStatus"
-                  onChange={(v) =>
-                    updateReportingEntity(
-                      "registrationStatus",
-                      v as FintracRegistrationStatus,
-                    )
-                  }
-                  value={opt.value}
-                />
-              ))}
-            </div>
-          </Field>
-          {reportingEntity.registrationStatus === "registered" ? (
-            <Field label="FINTRAC registration number">
-              <TextInput
-                onChange={(value) =>
-                  updateReportingEntity("registrationNumber", value)
-                }
-                placeholder="e.g. M12345678"
-                value={reportingEntity.registrationNumber}
-              />
-            </Field>
-          ) : null}
-          <div style={dividerStyle}>
-            <p
-              style={{
-                fontSize: "12px",
-                color: "#6b7280",
-                margin: "0 0 12px",
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-              }}
-            >
-              Compliance officer (if different from primary contact)
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                }}
-              >
-                <Field label="Full name">
-                  <TextInput
-                    onChange={(value) =>
-                      updateReportingEntity("coName", value)
-                    }
-                    placeholder="John Lee"
-                    value={reportingEntity.coName}
-                  />
-                </Field>
-                <Field label="Title">
-                  <TextInput
-                    onChange={(value) =>
-                      updateReportingEntity("coTitle", value)
-                    }
-                    placeholder="Chief Compliance Officer"
-                    value={reportingEntity.coTitle}
-                  />
-                </Field>
-              </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                }}
-              >
-                <Field label="Phone">
-                  <TextInput
-                    onChange={(value) =>
-                      updateReportingEntity("coPhone", value)
-                    }
-                    placeholder="416-555-0200"
-                    value={reportingEntity.coPhone}
-                  />
-                </Field>
-                <Field label="Email">
-                  <TextInput
-                    onChange={(value) =>
-                      updateReportingEntity("coEmail", value)
-                    }
-                    placeholder="compliance@example.com"
-                    value={reportingEntity.coEmail}
-                  />
-                </Field>
-              </div>
-            </div>
-          </div>
         </div>
       ) : null}
 
-      {/* Step 2 — Compliance Program */}
+      {/* Step 1 — Your Situation */}
+      {step === 1 ? (
+        <div style={sectionStyle}>
+          <div>
+            <p style={{ ...labelStyle, marginBottom: "10px" }}>
+              What's prompting you to reach out? (select all that apply)
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {TRIGGER_REASONS.map((reason) => (
+                <Checkbox
+                  key={reason}
+                  checked={situation.triggers.includes(reason)}
+                  label={TRIGGER_REASON_LABELS[reason]}
+                  onChange={() => toggleTrigger(reason)}
+                />
+              ))}
+            </div>
+          </div>
+          <Field label="Tell us more (optional)">
+            <TextArea
+              onChange={(value) =>
+                setSituation((c) => ({ ...c, triggerNotes: value }))
+              }
+              placeholder="Any context that would help us understand your situation..."
+              rows={3}
+              value={situation.triggerNotes}
+            />
+          </Field>
+          <div style={dividerStyle}>
+            <Field label="How soon do you need support?">
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px" }}
+              >
+                {(
+                  [
+                    { value: "standard", label: URGENCY_LABELS.standard },
+                    { value: "moderate", label: URGENCY_LABELS.moderate },
+                    { value: "urgent", label: URGENCY_LABELS.urgent },
+                    { value: "critical", label: URGENCY_LABELS.critical },
+                  ] as { value: UrgencyLevel; label: string }[]
+                ).map((opt) => (
+                  <Radio
+                    key={opt.value}
+                    checked={timing.urgency === opt.value}
+                    label={opt.label}
+                    name="urgency"
+                    onChange={(v) =>
+                      setTiming((c) => ({ ...c, urgency: v as UrgencyLevel }))
+                    }
+                    value={opt.value}
+                  />
+                ))}
+              </div>
+            </Field>
+          </div>
+          <Field label="Anything else before we call? (optional)">
+            <TextArea
+              onChange={(value) =>
+                setTiming((c) => ({ ...c, additionalNotes: value }))
+              }
+              placeholder="Any context, questions, or details you'd like us to know..."
+              rows={3}
+              value={timing.additionalNotes}
+            />
+          </Field>
+        </div>
+      ) : null}
+
+      {/* Step 2 — Compliance Program (Stage 2) */}
       {step === 2 ? (
         <div style={sectionStyle}>
           <ProgramStatusGroup
             label="Policies and procedures"
             name="policiesStatus"
             onChange={(value) =>
-              updateComplianceProgram("policiesStatus", value)
+              setComplianceProgram((c) => ({ ...c, policiesStatus: value }))
             }
             value={complianceProgram.policiesStatus}
           />
           <Field label="Date of last policy review (approximate)">
             <TextInput
               onChange={(value) =>
-                updateComplianceProgram("lastPolicyReview", value)
+                setComplianceProgram((c) => ({ ...c, lastPolicyReview: value }))
               }
               placeholder="e.g. Q4 2024"
               value={complianceProgram.lastPolicyReview}
@@ -850,7 +715,10 @@ export function AssessmentExperience() {
               label="Risk assessment"
               name="riskAssessmentStatus"
               onChange={(value) =>
-                updateComplianceProgram("riskAssessmentStatus", value)
+                setComplianceProgram((c) => ({
+                  ...c,
+                  riskAssessmentStatus: value,
+                }))
               }
               value={complianceProgram.riskAssessmentStatus}
             />
@@ -860,7 +728,7 @@ export function AssessmentExperience() {
               label="Training program"
               name="trainingStatus"
               onChange={(value) =>
-                updateComplianceProgram("trainingStatus", value)
+                setComplianceProgram((c) => ({ ...c, trainingStatus: value }))
               }
               value={complianceProgram.trainingStatus}
             />
@@ -870,17 +738,17 @@ export function AssessmentExperience() {
               label="Ongoing monitoring"
               name="monitoringStatus"
               onChange={(value) =>
-                updateComplianceProgram("monitoringStatus", value)
+                setComplianceProgram((c) => ({ ...c, monitoringStatus: value }))
               }
               value={complianceProgram.monitoringStatus}
             />
           </div>
-          <Field label="Additional notes about your compliance program">
+          <Field label="Anything else about your compliance program? (optional)">
             <TextArea
               onChange={(value) =>
-                updateComplianceProgram("programNotes", value)
+                setComplianceProgram((c) => ({ ...c, programNotes: value }))
               }
-              placeholder="Any context that would help us understand the current state of the program..."
+              placeholder="Any context about gaps, recent changes, or areas of concern..."
               rows={3}
               value={complianceProgram.programNotes}
             />
@@ -888,77 +756,13 @@ export function AssessmentExperience() {
         </div>
       ) : null}
 
-      {/* Step 3 — Reporting & Recordkeeping */}
+      {/* Step 3 — Prior FINTRAC Contact (Stage 2) */}
       {step === 3 ? (
         <div style={sectionStyle}>
-          <div>
-            <p style={{ ...labelStyle, marginBottom: "10px" }}>
-              Which transaction reports does your organization file with
-              FINTRAC?
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <Checkbox
-                checked={reportingProcesses.filesStrs}
-                label="Suspicious transaction reports (STRs)"
-                onChange={(value) =>
-                  updateReportingProcesses("filesStrs", value)
-                }
-              />
-              <Checkbox
-                checked={reportingProcesses.filesLctrs}
-                label="Large cash transaction reports (LCTRs)"
-                onChange={(value) =>
-                  updateReportingProcesses("filesLctrs", value)
-                }
-              />
-              <Checkbox
-                checked={reportingProcesses.filesEftrs}
-                label="Electronic funds transfer reports (EFTRs)"
-                onChange={(value) =>
-                  updateReportingProcesses("filesEftrs", value)
-                }
-              />
-            </div>
-          </div>
-          <Field label="Other reports filed (if any)">
-            <TextInput
-              onChange={(value) =>
-                updateReportingProcesses("otherReports", value)
-              }
-              placeholder="e.g. Casino disbursement reports, virtual currency reports"
-              value={reportingProcesses.otherReports}
-            />
-          </Field>
-          <div style={dividerStyle}>
-            <Field label="Notes on your current reporting processes">
-              <TextArea
-                onChange={(value) =>
-                  updateReportingProcesses("reportingNotes", value)
-                }
-                placeholder="How are reports identified, reviewed, and submitted? Any known gaps?"
-                rows={3}
-                value={reportingProcesses.reportingNotes}
-              />
-            </Field>
-          </div>
-          <Field label="Notes on your recordkeeping processes">
-            <TextArea
-              onChange={(value) =>
-                updateReportingProcesses("recordkeepingNotes", value)
-              }
-              placeholder="How are transaction records and client identification documents retained?"
-              rows={3}
-              value={reportingProcesses.recordkeepingNotes}
-            />
-          </Field>
-        </div>
-      ) : null}
-
-      {/* Step 4 — Prior Examinations */}
-      {step === 4 ? (
-        <div style={sectionStyle}>
           <Field label="Prior FINTRAC examination history">
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px" }}
+            >
               {(
                 [
                   { value: "none", label: "No prior FINTRAC examination" },
@@ -982,10 +786,10 @@ export function AssessmentExperience() {
                   label={opt.label}
                   name="examinationStatus"
                   onChange={(v) =>
-                    updatePriorExaminations(
-                      "examinationStatus",
-                      v as PriorExaminationStatus,
-                    )
+                    setPriorExaminations((c) => ({
+                      ...c,
+                      examinationStatus: v as PriorExaminationStatus,
+                    }))
                   }
                   value={opt.value}
                 />
@@ -996,20 +800,22 @@ export function AssessmentExperience() {
             <Field label="Date of last examination (approximate)">
               <TextInput
                 onChange={(value) =>
-                  updatePriorExaminations("lastExamDate", value)
+                  setPriorExaminations((c) => ({ ...c, lastExamDate: value }))
                 }
                 placeholder="e.g. March 2023"
                 value={priorExaminations.lastExamDate}
               />
             </Field>
           ) : null}
-          {priorExaminations.examinationStatus ===
-          "examined_with_findings" ? (
+          {priorExaminations.examinationStatus === "examined_with_findings" ? (
             <>
               <Field label="Brief summary of findings or orders">
                 <TextArea
                   onChange={(value) =>
-                    updatePriorExaminations("findingsSummary", value)
+                    setPriorExaminations((c) => ({
+                      ...c,
+                      findingsSummary: value,
+                    }))
                   }
                   placeholder="Describe the nature of findings, any compliance orders, or administrative monetary penalties..."
                   rows={4}
@@ -1019,7 +825,10 @@ export function AssessmentExperience() {
               <Field label="Current remediation status">
                 <TextArea
                   onChange={(value) =>
-                    updatePriorExaminations("remediationStatus", value)
+                    setPriorExaminations((c) => ({
+                      ...c,
+                      remediationStatus: value,
+                    }))
                   }
                   placeholder="What steps have been taken to address findings? What remains outstanding?"
                   rows={3}
@@ -1032,7 +841,10 @@ export function AssessmentExperience() {
             <Field label="What do you know about the pending examination?">
               <TextArea
                 onChange={(value) =>
-                  updatePriorExaminations("findingsSummary", value)
+                  setPriorExaminations((c) => ({
+                    ...c,
+                    findingsSummary: value,
+                  }))
                 }
                 placeholder="Timeline, scope, any correspondence received from FINTRAC..."
                 rows={3}
@@ -1043,11 +855,13 @@ export function AssessmentExperience() {
         </div>
       ) : null}
 
-      {/* Step 5 — Scope & Timing */}
-      {step === 5 ? (
+      {/* Step 4 — Scope & Documents (Stage 2) */}
+      {step === 4 ? (
         <div style={sectionStyle}>
           <Field label="Documents and records available for review">
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px" }}
+            >
               {(
                 [
                   {
@@ -1071,10 +885,10 @@ export function AssessmentExperience() {
                   label={opt.label}
                   name="documentsAvailable"
                   onChange={(v) =>
-                    updateServiceScope(
-                      "documentsAvailable",
-                      v as DocumentAvailability,
-                    )
+                    setServiceScope((c) => ({
+                      ...c,
+                      documentsAvailable: v as DocumentAvailability,
+                    }))
                   }
                   value={opt.value}
                 />
@@ -1082,59 +896,32 @@ export function AssessmentExperience() {
             </div>
           </Field>
           <div style={dividerStyle}>
-            <Field label="Urgency">
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: "6px" }}
-              >
-                {(
-                  [
-                    {
-                      value: "standard",
-                      label: "Standard — no urgent deadline",
-                    },
-                    { value: "moderate", label: "Moderate — within 60 days" },
-                    { value: "urgent", label: "Urgent — within 30 days" },
-                    {
-                      value: "critical",
-                      label:
-                        "Critical — within 2 weeks or examination pending",
-                    },
-                  ] as { value: UrgencyLevel; label: string }[]
-                ).map((opt) => (
-                  <Radio
-                    key={opt.value}
-                    checked={serviceScope.urgency === opt.value}
-                    label={opt.label}
-                    name="urgency"
-                    onChange={(v) =>
-                      updateServiceScope("urgency", v as UrgencyLevel)
-                    }
-                    value={opt.value}
-                  />
-                ))}
-              </div>
+            <Field label="Preferred scope of service">
+              <SelectInput
+                onChange={(value) =>
+                  setServiceScope((c) => ({
+                    ...c,
+                    preferredScope: value as ServiceScope,
+                  }))
+                }
+                options={SERVICE_SCOPE_OPTIONS}
+                value={serviceScope.preferredScope}
+              />
             </Field>
           </div>
           <Field label="Target completion date (if known)">
             <TextInput
-              onChange={(value) => updateServiceScope("targetDate", value)}
+              onChange={(value) =>
+                setServiceScope((c) => ({ ...c, targetDate: value }))
+              }
               placeholder="e.g. September 2026"
               value={serviceScope.targetDate}
             />
           </Field>
-          <Field label="Preferred scope of service">
-            <SelectInput
-              onChange={(value) =>
-                updateServiceScope("preferredScope", value as ServiceScope)
-              }
-              options={SERVICE_SCOPE_OPTIONS}
-              value={serviceScope.preferredScope}
-            />
-          </Field>
-          <Field label="Anything else you would like us to know">
+          <Field label="Anything else you'd like us to know (optional)">
             <TextArea
               onChange={(value) =>
-                updateServiceScope("additionalNotes", value)
+                setServiceScope((c) => ({ ...c, additionalNotes: value }))
               }
               placeholder="Additional context, specific areas of concern, questions for our team..."
               rows={4}
@@ -1164,12 +951,20 @@ export function AssessmentExperience() {
         style={{
           display: "flex",
           justifyContent: "space-between",
+          alignItems: "center",
           marginTop: "28px",
         }}
       >
+        {/* Back button */}
         <button
           disabled={isPending || step === 0}
-          onClick={() => setStep((current) => Math.max(0, current - 1))}
+          onClick={() =>
+            setStep((current) => {
+              const prev = Math.max(0, current - 1);
+              if (current === STAGE_1_STEP_COUNT) setInStage2(false);
+              return prev;
+            })
+          }
           style={{
             visibility: step === 0 ? "hidden" : "visible",
             padding: "8px 18px",
@@ -1184,44 +979,88 @@ export function AssessmentExperience() {
         >
           Back
         </button>
-        {step < STEPS.length - 1 ? (
-          <button
-            disabled={isPending}
-            onClick={() =>
-              setStep((current) => Math.min(STEPS.length - 1, current + 1))
-            }
-            style={{
-              padding: "8px 18px",
-              borderRadius: "6px",
-              border: "none",
-              background: "#1d4771",
-              color: "#fff",
-              fontSize: "14px",
-              cursor: "pointer",
-              fontWeight: 500,
-            }}
-            type="button"
-          >
-            Next →
-          </button>
-        ) : (
-          <button
-            disabled={isPending}
-            style={{
-              padding: "8px 18px",
-              borderRadius: "6px",
-              border: "none",
-              background: "#16a34a",
-              color: "#fff",
-              fontSize: "14px",
-              cursor: "pointer",
-              fontWeight: 500,
-            }}
-            type="submit"
-          >
-            {isPending ? "Submitting..." : "Submit ↗"}
-          </button>
-        )}
+
+        {/* Right-side nav */}
+        <div style={{ display: "flex", gap: "8px" }}>
+          {/* Stage 1 final step: Submit + Add more detail */}
+          {isStage1Final && !inStage2 ? (
+            <>
+              <button
+                disabled={isPending}
+                onClick={() => handleSubmit(false)}
+                style={{
+                  padding: "8px 18px",
+                  borderRadius: "6px",
+                  border: "none",
+                  background: "#16a34a",
+                  color: "#fff",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  fontWeight: 500,
+                }}
+                type="button"
+              >
+                {isPending ? "Submitting..." : "Submit ↗"}
+              </button>
+              <button
+                disabled={isPending}
+                onClick={handleEnterStage2}
+                style={{
+                  padding: "8px 18px",
+                  borderRadius: "6px",
+                  border: "none",
+                  background: "#1d4771",
+                  color: "#fff",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  fontWeight: 500,
+                }}
+                type="button"
+              >
+                Add more detail →
+              </button>
+            </>
+          ) : isLastStep ? (
+            /* Stage 2 final step: Submit */
+            <button
+              disabled={isPending}
+              style={{
+                padding: "8px 18px",
+                borderRadius: "6px",
+                border: "none",
+                background: "#16a34a",
+                color: "#fff",
+                fontSize: "14px",
+                cursor: "pointer",
+                fontWeight: 500,
+              }}
+              type="submit"
+            >
+              {isPending ? "Submitting..." : "Submit ↗"}
+            </button>
+          ) : (
+            /* All other steps: Next */
+            <button
+              disabled={isPending}
+              onClick={() =>
+                setStep((current) => Math.min(STEPS.length - 1, current + 1))
+              }
+              style={{
+                padding: "8px 18px",
+                borderRadius: "6px",
+                border: "none",
+                background: "#1d4771",
+                color: "#fff",
+                fontSize: "14px",
+                cursor: "pointer",
+                fontWeight: 500,
+              }}
+              type="button"
+            >
+              Next →
+            </button>
+          )}
+        </div>
       </div>
     </form>
   );
