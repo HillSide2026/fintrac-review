@@ -32,8 +32,7 @@ const inputStyle = {
   fontSize: "14px",
   boxSizing: "border-box" as const,
   background: "#fff",
-  color: "#111",
-  outline: "none",
+  color: "#111827",
 };
 
 const labelStyle = {
@@ -587,9 +586,8 @@ export function AssessmentExperience() {
             style={{
               height: "100%",
               width: `${progress}%`,
-              background: "#2563eb",
+              background: "#1d4771",
               borderRadius: "4px",
-              transition: "width 0.2s",
             }}
           />
         </div>
@@ -1187,7 +1185,7 @@ export function AssessmentExperience() {
               padding: "8px 18px",
               borderRadius: "6px",
               border: "none",
-              background: "#2563eb",
+              background: "#1d4771",
               color: "#fff",
               fontSize: "14px",
               cursor: "pointer",

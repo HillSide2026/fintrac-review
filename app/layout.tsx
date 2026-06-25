@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Canadian Startup Clinic",
+  title: "FINTRAC Effectiveness Review — Levine Legal",
   description:
-    "Embedded intake flow for Canadian startup incorporation matters.",
+    "Intake form for Canadian reporting entities seeking a FINTRAC AML/ATF compliance program effectiveness review.",
 };
 
 export default function RootLayout({
