@@ -1,14 +1,27 @@
-# Canadian Startup Clinic MVP
+# FINTRAC Effectiveness Review Intake
 
-Minimal embed-first MVP for a Canadian startup incorporation intake flow built with Next.js, Tailwind, Claude, GHL, and Airtable.
+Embed-first multi-step intake form for Levine Legal Professional Corporation. Collects information from Canadian reporting entities seeking a FINTRAC AML/ATF compliance program effectiveness review, generates an internal Claude assessment, and routes the intake to GHL and Airtable.
 
 ## Stack
 
 - Next.js
 - Tailwind CSS
-- Anthropic Claude API for internal notes only
+- Anthropic Claude API (internal assessment notes only — never shown to the client)
 - GoHighLevel webhook
 - Airtable REST API
+
+## Intake flow
+
+Six steps collected from the client:
+
+1. **Organization profile** — legal name, province, primary contact details
+2. **Reporting entity & registration** — entity type (bank, MSB, credit union, etc.), FINTRAC registration status and number, compliance officer details
+3. **Compliance program** — status of policies & procedures, risk assessment, training program, and ongoing monitoring; date of last policy review
+4. **Reporting & recordkeeping** — which FINTRAC reports are filed (STRs, LCTRs, EFTRs), reporting process notes, recordkeeping notes
+5. **Prior examinations** — examination history, findings or compliance orders, remediation status
+6. **Scope & timing** — document availability, urgency level, target completion date, preferred scope of service (full review, gap assessment, document review, or targeted)
+
+On submission, the server validates the payload, builds a structured summary, and optionally calls Claude to produce internal scoping notes (program gaps, compliance risks, missing information, scoping recommendations). The summary is returned to the client; the Claude assessment is for internal team use only and is forwarded to GHL and Airtable alongside the full intake.
 
 ## Local setup
 
@@ -32,17 +45,17 @@ Minimal embed-first MVP for a Canadian startup incorporation intake flow built w
 
 ## Environment variables
 
-- `ANTHROPIC_API_KEY`: Optional. When present, the server generates internal-only intake notes for staff.
-- `ANTHROPIC_MODEL`: Optional model override. Defaults to `claude-3-5-sonnet-latest`.
+- `ANTHROPIC_API_KEY`: Optional. When present, the server generates internal scoping notes for the legal team after each submission.
+- `ANTHROPIC_MODEL`: Optional model override. Defaults to `claude-sonnet-4-6`.
 - `GHL_WEBHOOK_URL`: Optional GoHighLevel workflow webhook URL for lead capture.
 - `AIRTABLE_API_KEY`: Optional Airtable personal access token.
 - `AIRTABLE_BASE_ID`: Required when Airtable storage is enabled.
-- `AIRTABLE_TABLE_NAME`: Optional Airtable table name. Defaults to `Assessments`.
+- `AIRTABLE_TABLE_NAME`: Optional Airtable table name. Defaults to `FINTRAC Intakes`.
 - `EMBED_ALLOWED_ORIGINS`: Optional comma-separated list of allowed iframe parent origins, for example `https://sites.leadconnectorhq.com,https://yourdomain.com`.
 
-If `GHL_WEBHOOK_URL` is not set, GHL delivery is skipped.
-If Airtable credentials are not set, Airtable storage is skipped.
-If neither is configured, the form still works for preview purposes, but no lead is captured.
+If `GHL_WEBHOOK_URL` is not set, GHL delivery is skipped.  
+If Airtable credentials are not set, Airtable storage is skipped.  
+If neither is configured, the form still works for preview purposes but no lead is captured.
 
 ## Airtable fields
 
@@ -55,28 +68,17 @@ Create an Airtable table with these field names:
 - `assessment`
 - `created_at`
 
-## GHL single-page embed
+## Iframe embed
 
-Recommended architecture:
+The app is designed to run inside an iframe on a GHL landing page. It automatically posts `fintrac:embed-resize` messages to the parent window so the iframe height tracks the form content.
 
-1. Keep the GHL page as the only landing page.
-2. Leave the hero and CTA in GHL.
-3. Make the hero CTA scroll to the first existing purchase-form section.
-4. Replace the purchase form widget inside each purchase-form section with a custom HTML block that loads this app in an iframe.
-5. Let the Next.js app handle the intake, Claude call, GHL webhook delivery, and Airtable storage server-side.
-
-The current preview page already has two purchase-form sections wired as one-step order blocks:
-
-- `section-EnSH2sIQyz` with `.one-step-order-iMornIqEiP`
-- `section-4ApCUbMV7J` with `.one-step-order-U9Jm8MjeEu`
-
-In each of those sections, remove the purchase form element and replace it with:
+Add this to the GHL page in a custom HTML block:
 
 ```html
 <iframe
-  class="startup-clinic-embed"
+  class="fintrac-embed"
   src="https://YOUR-VERCEL-APP.vercel.app/"
-  title="Canadian Startup Clinic"
+  title="FINTRAC Effectiveness Review Intake"
   loading="lazy"
   scrolling="no"
   style="width:100%;border:0;min-height:720px;background:transparent;"
@@ -84,13 +86,13 @@ In each of those sections, remove the purchase form element and replace it with:
 
 <script>
   (function () {
-    if (window.__startupClinicEmbedBound) return;
-    window.__startupClinicEmbedBound = true;
+    if (window.__fintracEmbedBound) return;
+    window.__fintracEmbedBound = true;
 
     window.addEventListener("message", function (event) {
-      if (!event.data || event.data.type !== "incorp:embed-resize") return;
+      if (!event.data || event.data.type !== "fintrac:embed-resize") return;
 
-      document.querySelectorAll("iframe.startup-clinic-embed").forEach(function (frame) {
+      document.querySelectorAll("iframe.fintrac-embed").forEach(function (frame) {
         if (frame.contentWindow === event.source) {
           frame.style.height = Math.max(event.data.height || 0, 720) + "px";
         }
@@ -99,8 +101,6 @@ In each of those sections, remove the purchase form element and replace it with:
   })();
 </script>
 ```
-
-That gives you one GHL landing page, one embedded skill UI, and no duplicate landing page on Vercel.
 
 ## Scripts
 
