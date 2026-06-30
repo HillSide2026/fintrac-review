@@ -137,11 +137,22 @@ Auth-gated client portal. Created when a consultation converts to a paid engagem
 
 ---
 
-## Shared decisions still open
+## Shared decisions
 
-| Decision | Affects |
-|----------|---------|
-| Scheduling tool: GHL calendar vs. Calendly | Module 2 `BookingWidget` |
-| Token persistence: Airtable (Modules 1–2) → migrate to Supabase (Module 3), or Supabase from the start | Data layer for all modules |
-| Client auth method: magic link vs. email+password | Module 3 auth |
-| How Matthew creates programs: manual Airtable/Supabase entry vs. an internal admin UI | Module 3 onboarding |
+| Decision | Resolution |
+|----------|------------|
+| Scheduling tool | **GHL calendar embed** — `BookingWidget` wraps the GHL calendar iframe |
+| Data layer | **Airtable throughout** — tokens, diagnosis reports, consultations, and programs all stored in Airtable; no Supabase |
+| Client auth method | Open — decide before Module 3 begins |
+| How Matthew creates programs | Open — decide before Module 3 begins |
+
+### Airtable tables required
+
+| Table | Module | Key fields |
+|-------|--------|------------|
+| `FINTRAC Intakes` | Intake | existing |
+| `Diagnosis Reports` | 1 | `token`, `org_name`, `entity_type`, `overall_rating`, `overall_score`, `report_json`, `contact_email`, `created_at` |
+| `Consultations` | 2 | `id`, `diagnosis_token`, `call_date`, `status`, `prep_notes`, `created_at` |
+| `Programs` | 3 | `id`, `client_id`, `org_name`, `diagnosis_token`, `status`, `start_date`, `target_date` |
+| `Remediation Items` | 3 | `id`, `program_id`, `pillar`, `description`, `priority`, `status`, `due_date` |
+| `Program Documents` | 3 | `id`, `program_id`, `pillar`, `name`, `url`, `uploaded_at` |
