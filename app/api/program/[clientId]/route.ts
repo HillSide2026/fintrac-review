@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-// TODO: auth-gate, fetch program from Supabase
+// TODO: fetch program + remediation items from Airtable by client_id
 export async function GET(
   _request: Request,
   { params }: { params: { clientId: string } },

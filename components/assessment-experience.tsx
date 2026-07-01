@@ -636,7 +636,7 @@ export function AssessmentExperience() {
         <div style={sectionStyle}>
           <div>
             <p style={{ ...labelStyle, marginBottom: "10px" }}>
-              What's prompting you to reach out? (select all that apply)
+              What&apos;s prompting you to reach out? (select all that apply)
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {TRIGGER_REASONS.map((reason) => (
