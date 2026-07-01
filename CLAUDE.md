@@ -115,9 +115,42 @@ Font: `system-ui, sans-serif` — no web fonts.
 
 ### Airtable Table Fields
 
-The table must have exactly these field names (not what the README says — the README is wrong):
+All five tables live in a single Airtable base. All env vars are optional — each integration silently no-ops if `AIRTABLE_API_KEY` or `AIRTABLE_BASE_ID` is absent.
+
+| Variable | Default table name |
+|----------|--------------------|
+| `AIRTABLE_TABLE_NAME` | `FINTRAC Intakes` |
+| `AIRTABLE_PREDIAGNOSIS_TABLE_NAME` | `Pre-Diagnosis Reports` |
+| `AIRTABLE_CONSULTATION_TABLE_NAME` | `Consultations` |
+| `AIRTABLE_PROGRAMS_TABLE_NAME` | `Programs` |
+| `AIRTABLE_REMEDIATION_TABLE_NAME` | `Remediation Items` |
+| `AIRTABLE_DOCUMENTS_TABLE_NAME` | `Program Documents` |
+
+**`FINTRAC Intakes`** — Module 0, written by `/api/assessment`
 
 `org_name`, `contact_name`, `email`, `entity_type`, `province`, `urgency`, `preferred_scope`, `answers`, `assessment`, `created_at`
+
+**`Pre-Diagnosis Reports`** — Module 1, written by `/api/pre-diagnosis`
+
+`token`, `org_name`, `entity_type`, `contact_email`, `overall_rating` (number), `overall_pct`, `report_json` (long text — full JSON), `created_at`
+
+**`Consultations`** — Module 2, written by `/api/consultation/book`
+
+`diagnosis_token`, `call_date`, `status`, `notes`, `created_at`
+
+**`Programs`** — Module 3, created manually by Matthew
+
+`client_id` (UUID — becomes the portal URL slug), `org_name`, `entity_type`, `diagnosis_token`, `status` (`scoping`|`active`|`review`|`complete`|`paused`), `start_date` (YYYY-MM-DD), `target_date` (YYYY-MM-DD)
+
+**`Remediation Items`** — Module 3, created manually by Matthew
+
+`program_id` (**linked record** → Programs), `pillar` (`policies`|`risk_assessment`|`training`|`monitoring`|`compliance_officer`), `description`, `priority` (`critical`|`high`|`medium`|`low`), `status` (`not_started`|`in_progress`|`complete`), `due_date` (YYYY-MM-DD or blank), `notes`
+
+**`Program Documents`** — Module 3, created manually by Matthew
+
+`program_id` (**linked record** → Programs), `name`, `pillar` (pillar key or `general`), `doc_type` (`policy`|`risk_assessment`|`training_record`|`procedure`|`other`), `url`, `uploaded_at`
+
+The client portal URL is `/program/<client_id>` — the UUID is the access credential; no login required.
 
 ## Scripts
 
@@ -130,9 +163,9 @@ npm run typecheck  # tsc --noEmit
 
 ## Known Backlog
 
+- **Airtable not yet wired** — create all 5 tables in the base (see Airtable Table Fields above), set `AIRTABLE_API_KEY` + `AIRTABLE_BASE_ID` in `.env.local`, and create the first `Programs` record manually to test the portal
 - `AGENTS.md` is stale (references old `incorp` incorporation repo) — can be deleted or replaced by this file
 - `package.json` name is `"incorp"` — should be updated
 - `app/layout.tsx` metadata is stale ("Canadian Startup Clinic") — update title/description
 - No client-side validation — form allows empty submission; server catches it but UX is poor
 - No test suite — `parseFintracIntakeAnswers` and `createIntakeSummary` are good unit test candidates
-- Planned: Supabase/PostgreSQL governance database (see `fintrac-effectiveness-review/SKILL.md` for schema sketch)
