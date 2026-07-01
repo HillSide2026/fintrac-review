@@ -26,11 +26,46 @@ export type Program = {
   remediationItems: RemediationItem[];
 };
 
+export type DocumentType =
+  | "policy"
+  | "risk_assessment"
+  | "training_record"
+  | "procedure"
+  | "other";
+
 export type DocumentRecord = {
   id: string;
   programId: string;
   name: string;
   pillar: string;
+  docType: DocumentType;
   uploadedAt: string;
   url: string;
+};
+
+export type PillarHealth = {
+  pillar: string;
+  label: string;
+  total: number;
+  complete: number;
+  hasCritical: boolean;
+  pct: number;
+};
+
+export type ProgramWithItems = {
+  program: Program;
+  items: RemediationItem[];
+  documents: DocumentRecord[];
+  pillarHealth: PillarHealth[];
+};
+
+export type PatchItemBody = {
+  itemId: string;
+  status: RemediationStatus;
+};
+
+export type PatchItemResponse = {
+  ok: true;
+  itemId: string;
+  status: RemediationStatus;
 };

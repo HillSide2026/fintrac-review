@@ -1,17 +1,20 @@
-// Phase 3: Remediation tracker
-// Shows: checklist of items by pillar, status, assignee, due date
-// Both Matthew and client can update status
-
-// TODO: render RemediationTracker component, real-time updates via Supabase
+import { notFound } from "next/navigation";
+import { getProgramWithItems } from "@/lib/program/db";
+import { ProgramQueryProvider } from "@/components/program/query-provider";
+import { RemediationTracker } from "@/components/program/remediation-tracker";
 
 export default async function RemediationPage({ params }: { params: { clientId: string } }) {
-  const { clientId } = params;
-  void clientId;
+  const data = await getProgramWithItems(params.clientId);
+  if (!data) notFound();
 
   return (
-    <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: "720px", margin: "0 auto", padding: "24px 20px" }}>
-      <p style={{ color: "#1d4771", fontWeight: 600 }}>Remediation Tracker</p>
-      <p style={{ color: "#6b7280", fontSize: "13px" }}>Coming soon.</p>
+    <main style={{ fontFamily: "system-ui, sans-serif" }}>
+      <ProgramQueryProvider>
+        <RemediationTracker
+          clientId={params.clientId}
+          initialItems={data.items}
+        />
+      </ProgramQueryProvider>
     </main>
   );
 }

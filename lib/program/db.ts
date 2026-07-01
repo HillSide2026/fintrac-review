@@ -1,17 +1,36 @@
-// Airtable query helpers for the Program module — implemented in Phase 3
-// Uses existing AIRTABLE_API_KEY + AIRTABLE_BASE_ID env vars
-// Tables: "Programs", "Remediation Items", "Program Documents"
+import type { Program, RemediationItem, ProgramWithItems } from "./types";
+import {
+  getProgram as airtableGetProgram,
+  getRemediationItems,
+  getDocumentRecords,
+  updateRemediationItemStatus,
+} from "@/lib/integrations/airtable-program";
+import { computePillarHealth } from "./pillar-health";
 
-import type { Program, RemediationItem } from "./types";
-
-export async function getProgram(_clientId: string): Promise<Program | null> {
-  // TODO: implement Airtable GET — filter Programs by client_id
-  return null;
+export async function getProgram(clientId: string): Promise<Program | null> {
+  return airtableGetProgram(clientId);
 }
 
 export async function updateRemediationItem(
   _programId: string,
-  _item: Partial<RemediationItem> & { id: string },
+  item: Partial<RemediationItem> & { id: string },
 ): Promise<void> {
-  // TODO: implement Airtable PATCH — update Remediation Items record
+  if (!item.status) return;
+  await updateRemediationItemStatus(item.id, item.status);
+}
+
+export async function getProgramWithItems(
+  clientId: string,
+): Promise<ProgramWithItems | null> {
+  const program = await airtableGetProgram(clientId);
+  if (!program) return null;
+
+  const [items, documents] = await Promise.all([
+    getRemediationItems(program.id),
+    getDocumentRecords(program.id),
+  ]);
+
+  const pillarHealth = computePillarHealth(items);
+
+  return { program, items, documents, pillarHealth };
 }
