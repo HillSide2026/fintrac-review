@@ -5,26 +5,31 @@ export type DiagnosisPillar =
   | "monitoring"
   | "compliance_officer";
 
-export type PillarScore = 0 | 1 | 2 | 3 | 4;
+export type RiskRating =
+  | "strong"
+  | "gaps_identified"
+  | "material_deficiencies";
 
-export type RiskRating = "strong" | "gaps_identified" | "material_deficiencies";
-
-export type PillarAnswers = {
+export type DiagnosisQuestion = {
+  id: string;
   pillar: DiagnosisPillar;
-  responses: Record<string, string>;
+  question: string;
+  options: { value: number; label: string }[];
 };
 
-export type DiagnosisAnswers = {
+export type DiagnosisPayload = {
   orgName: string;
   entityType: string;
   contactEmail: string;
-  pillars: PillarAnswers[];
+  answers: Record<string, number>; // questionId → 0–4
 };
 
 export type DiagnosisPillarResult = {
   pillar: DiagnosisPillar;
   label: string;
-  score: PillarScore;
+  rawScore: number;
+  maxScore: number;
+  pct: number;
   narrative: string;
 };
 
@@ -32,10 +37,17 @@ export type DiagnosisReport = {
   token: string;
   orgName: string;
   entityType: string;
+  contactEmail: string;
   overallRating: RiskRating;
-  overallScore: number;
+  overallPct: number;
   pillars: DiagnosisPillarResult[];
   topGaps: string[];
   recommendedNextStep: string;
   createdAt: string;
+};
+
+export type DiagnosisClaudeOutput = {
+  pillars: Record<string, string>;
+  topGaps: string[];
+  recommendedNextStep: string;
 };
