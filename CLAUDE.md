@@ -59,6 +59,7 @@ Always import and extend these. Never redefine them inline per-field.
 | Primary action | `#1d4771` (Levine Law brand navy — `rgb(29,71,113)`) |
 | Confirm/submit | `#16a34a` |
 | Success bg / border / text | `#f0fdf4` / `#bbf7d0` / `#166534` |
+| Warning bg / border / text | `#fffbeb` / `#fde68a` / `#92400e` |
 | Error bg / border / text | `#fef2f2` / `#fecaca` / `#b91c1c` |
 
 **Type scale:**

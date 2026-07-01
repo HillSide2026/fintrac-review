@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
+import { getPreDiagnosisReport } from "@/lib/integrations/airtable-prediagnosis";
 
-// TODO: retrieve diagnosis report from Airtable by token
 export async function GET(
   _request: Request,
   { params }: { params: { token: string } },
@@ -11,6 +11,11 @@ export async function GET(
     return NextResponse.json({ error: "Token required." }, { status: 400 });
   }
 
-  // TODO: fetch from Airtable / Supabase
-  return NextResponse.json({ error: "Not implemented." }, { status: 501 });
+  const report = await getPreDiagnosisReport(token);
+
+  if (!report) {
+    return NextResponse.json({ error: "Report not found." }, { status: 404 });
+  }
+
+  return NextResponse.json(report);
 }

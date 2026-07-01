@@ -1,5 +1,46 @@
-// DRAFT — pending Matthew Levine review before production use
-import type { DiagnosisPillar, DiagnosisQuestion } from "./types";
+import type { DiagnosisPillar, DiagnosisQuestion, EmployeeCount, MsbActivity } from "./types";
+
+export const CANADIAN_PROVINCES: { value: string; label: string }[] = [
+  { value: "AB", label: "Alberta" },
+  { value: "BC", label: "British Columbia" },
+  { value: "MB", label: "Manitoba" },
+  { value: "NB", label: "New Brunswick" },
+  { value: "NL", label: "Newfoundland and Labrador" },
+  { value: "NS", label: "Nova Scotia" },
+  { value: "NT", label: "Northwest Territories" },
+  { value: "NU", label: "Nunavut" },
+  { value: "ON", label: "Ontario" },
+  { value: "PE", label: "Prince Edward Island" },
+  { value: "QC", label: "Quebec" },
+  { value: "SK", label: "Saskatchewan" },
+  { value: "YT", label: "Yukon" },
+];
+
+export const EMPLOYEE_COUNT_OPTIONS: { value: EmployeeCount; label: string }[] = [
+  { value: "1-5", label: "1–5 employees" },
+  { value: "6-20", label: "6–20 employees" },
+  { value: "21-50", label: "21–50 employees" },
+  { value: "51-200", label: "51–200 employees" },
+  { value: "200+", label: "More than 200 employees" },
+];
+
+export const MSB_ACTIVITY_OPTIONS: { value: MsbActivity; label: string }[] = [
+  { value: "foreign_exchange", label: "Foreign exchange dealing" },
+  { value: "money_transfer", label: "Remittance / money transfer" },
+  { value: "money_orders", label: "Issuing or redeeming money orders" },
+  { value: "travellers_cheques", label: "Issuing or redeeming traveller's cheques" },
+  { value: "virtual_currency", label: "Dealing in virtual currencies (crypto)" },
+  { value: "cheque_cashing", label: "Cheque cashing" },
+];
+
+export function getRegistrationYears(): string[] {
+  const current = new Date().getFullYear();
+  const years: string[] = [];
+  for (let y = current; y >= 1980; y--) {
+    years.push(String(y));
+  }
+  return years;
+}
 
 export const PILLAR_LABELS: Record<DiagnosisPillar, string> = {
   policies: "Policies & Procedures",

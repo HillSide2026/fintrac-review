@@ -3,11 +3,8 @@
 import type { DocumentRecord } from "@/lib/program/types";
 
 // Phase 3: Document management
-// Upload: policies, procedures, risk assessment, training records
-// Stored in Supabase Storage, linked to program + pillar
-// Download: signed URLs, no public access
-
-// TODO: implement upload/download UI, Supabase Storage integration
+// Links to program documents stored as URLs in Airtable (policy drafts, risk assessments, training records)
+// No file upload in MVP — documents are URL fields linking to GHL, Google Drive, or wherever Matthew stores them
 
 export function DocumentManager({ documents }: { documents: DocumentRecord[] }) {
   void documents;
