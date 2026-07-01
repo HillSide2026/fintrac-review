@@ -1,3 +1,11 @@
+export type ConsultationBookingPayload = {
+  diagnosisToken: string;
+  contactEmail?: string;
+  contactName?: string;
+  callDate?: string;
+  notes?: string;
+};
+
 export type ConsultationRequest = {
   diagnosisToken: string;
   preferredDate: string;

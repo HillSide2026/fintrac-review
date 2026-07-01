@@ -1,37 +1,7 @@
-import type { DiagnosisReport, RiskRating } from "@/lib/pre-diagnosis/types";
+import type { DiagnosisReport } from "@/lib/pre-diagnosis/types";
 import { PILLAR_LABELS, PILLAR_ORDER } from "@/lib/pre-diagnosis/questions";
+import { BAND_STYLES, DISCLAIMER } from "@/lib/pre-diagnosis/report-constants";
 import { PillarSignalRow } from "./pillar-signal";
-
-type BandStyle = {
-  background: string;
-  border: string;
-  color: string;
-  label: string;
-};
-
-const BAND_STYLES: Record<RiskRating, BandStyle> = {
-  strong: {
-    background: "#f0fdf4",
-    border: "#bbf7d0",
-    color: "#166534",
-    label: "Program Foundations Present",
-  },
-  gaps_identified: {
-    background: "#fffbeb",
-    border: "#fde68a",
-    color: "#92400e",
-    label: "Gaps Identified",
-  },
-  material_deficiencies: {
-    background: "#fef2f2",
-    border: "#fecaca",
-    color: "#b91c1c",
-    label: "Risk Indicators Present",
-  },
-};
-
-const DISCLAIMER =
-  "These preliminary findings are based on self-reported responses and are for informational purposes only. They do not constitute legal advice, a formal effectiveness review, or a compliance opinion. All findings require review by a qualified AML compliance lawyer before any conclusions can be drawn. No solicitor-client relationship is formed by this tool.";
 
 export function PreliminaryReport({ report }: { report: DiagnosisReport }) {
   const band = BAND_STYLES[report.overallRating];
